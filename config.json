@@ -1,0 +1,11 @@
+{
+  "CodeFolderPath": "example",
+  "ValidFileSuffix": [
+    ".php",".html",".htm",".tpl",".ini"
+  ],
+  "IgnoreFolderPath": [".idea","content/cache"],
+  "IgnoreFileName": ["test.php"],
+  "IgnoreBlankLines": true,
+  "IgnoreComment": true,
+  "IgnoreMacStyleFile":true
+}
