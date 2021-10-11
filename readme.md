@@ -1,6 +1,6 @@
 ### Codelines简介
 
-![codelines](https://github.com/super-l/codelines/run.png)
+![codelines](https://github.com/super-l/codelines/blob/main/run.png)
 
 一款跨平台，可以统计项目代码行数的软件(命令行软件，无界面)，支持多种自定义过滤。
 主要用于代码安全审计服务相关的费用评估。
