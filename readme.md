@@ -45,6 +45,17 @@ linux下运行：./codelines
 windows下运行: codelines
 ```
 
+### 编译说明
+linux系统；
+```
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/linux_amd64/codelines
+```
+
+windows系统：
+```
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o build/windows_amd64/codelines.exe
+```
+
 ### 其他信息
 
 如果好用，点赞走起。后续版本，考虑加入导出html报表功能。

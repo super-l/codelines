@@ -1,6 +1,4 @@
 .idea
 *.log
 logs/
-release
-build
 result
