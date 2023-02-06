@@ -36,7 +36,6 @@ func GetResultInfo(config Config) ResultInfo {
 	return resultInfo
 }
 
-
 // 总文件个数
 func getAllFileCount(config Config) int64 {
 	var allFileCount = int64(0)
@@ -45,14 +44,14 @@ func getAllFileCount(config Config) int64 {
 		if fi.IsDir() {
 			return nil
 		}
-		allFileCount ++
+		allFileCount++
 		return nil
 	})
 	return allFileCount
 }
 
 // 递归获取某个目录下的所有文件
-func getVerifyFilesPathList(config Config)(result []string, err error) {
+func getVerifyFilesPathList(config Config) (result []string, err error) {
 	baseFolder := utils.ToLinuxPath(config.CodeFolderPath)
 	filepath.Walk(baseFolder, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
@@ -61,27 +60,26 @@ func getVerifyFilesPathList(config Config)(result []string, err error) {
 		}
 		if fi.IsDir() {
 			// 忽略的目录
-			if IsIgnoreDir(config, path){
+			if IsIgnoreDir(config, path) {
 				return filepath.SkipDir
 			}
 		}
 		if !fi.IsDir() {
 			// 忽略MAC隐藏文件
 			if config.IgnoreMacStyleFile {
-				if utils.IsMacStyleFile(fi.Name()){
+				if utils.IsMacStyleFile(fi.Name()) {
 					return nil
 				}
 			}
 			// 单独忽略的文件
-			if IsIgnoreFile(config,path) {
+			if IsIgnoreFile(config, path) {
 				return nil
 			}
 
 			// 忽略不需要的文件类型
-			if IsIgnoreFileSuffix(config, fi.Name()){
+			if IsIgnoreFileSuffix(config, fi.Name()) {
 				return nil
 			}
-
 
 			result = append(result, path)
 		}
@@ -90,13 +88,13 @@ func getVerifyFilesPathList(config Config)(result []string, err error) {
 	return result, nil
 }
 
-func getVerifyFileListInfo(filelist []string) (verifyLineCount int64, emptyLineCount int64, singleCommentsLineCount int64, multiCommentsLineCount int64){
+func getVerifyFileListInfo(filelist []string) (verifyLineCount int64, emptyLineCount int64, singleCommentsLineCount int64, multiCommentsLineCount int64) {
 	for _, filePath := range filelist {
 		currentVerifyLineCount, currentEmptyLineCount, currentSingleCommentsLineCount, currentMultiCommentsLineCount, err := getVerifyLinesCountForFile(filePath)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
-		fmt.Println(fmt.Sprintf("文件路径:%s 有效行数:%d 空行数:%d 单行注释行数:%d,块注释行数:%d", filePath, currentVerifyLineCount, currentEmptyLineCount, currentSingleCommentsLineCount,currentMultiCommentsLineCount))
+		fmt.Printf("文件路径:%s 有效行数:%d 空行数:%d 单行注释行数:%d,块注释行数:%d\r\n", filePath, currentVerifyLineCount, currentEmptyLineCount, currentSingleCommentsLineCount, currentMultiCommentsLineCount)
 		verifyLineCount = verifyLineCount + currentVerifyLineCount
 		emptyLineCount = emptyLineCount + currentEmptyLineCount
 		singleCommentsLineCount = singleCommentsLineCount + currentSingleCommentsLineCount
@@ -105,7 +103,7 @@ func getVerifyFileListInfo(filelist []string) (verifyLineCount int64, emptyLineC
 	return
 }
 
-func getVerifyLinesCountForFile(filepath string) (int64,int64,int64,int64, error) {
+func getVerifyLinesCountForFile(filepath string) (int64, int64, int64, int64, error) {
 	var verifyLineCount = int64(0)
 	var emptyLineCount = int64(0)
 	var singleCommentLineCount = int64(0)
@@ -113,7 +111,7 @@ func getVerifyLinesCountForFile(filepath string) (int64,int64,int64,int64, error
 
 	file, err := os.Open(filepath)
 	if err != nil {
-		return 0,0,0,0,err
+		return 0, 0, 0, 0, err
 	}
 	defer file.Close()
 
@@ -128,55 +126,54 @@ func getVerifyLinesCountForFile(filepath string) (int64,int64,int64,int64, error
 		if !isPrefix {
 			str := string(byteStr)
 
-			if strings.HasPrefix(strings.Trim(str," "), "/*") && strings.HasSuffix(str, "*/") {
-				singleCommentLineCount ++
+			if strings.HasPrefix(strings.Trim(str, " "), "/*") && strings.HasSuffix(str, "*/") {
+				singleCommentLineCount++
 				continue
 			}
 
-			if strings.HasSuffix(strings.Trim(str," "), "*/") {
+			if strings.HasSuffix(strings.Trim(str, " "), "*/") {
 				startComment = false
-				multiCommentLineCount ++
+				multiCommentLineCount++
 				continue
 			}
 
 			// 块注释 /**/注释
 			if strings.HasPrefix(str, "/*") {
 				startComment = true
-				multiCommentLineCount ++
+				multiCommentLineCount++
 				continue
 			}
 
 			if startComment {
-				multiCommentLineCount ++
+				multiCommentLineCount++
 				continue
 			}
 
 			// 空字符不统计
-			if 0 == len(byteStr) || str == "\r\n"{
-				emptyLineCount ++
+			if len(byteStr) == 0 || str == "\r\n" {
+				emptyLineCount++
 				continue
 			}
 
 			// 常规单行注释
-			strtrim := strings.Trim(str," ")
+			strtrim := strings.Trim(str, " ")
 			if len(strtrim) >= 2 && strtrim[0:2] == "//" {
-				singleCommentLineCount ++
+				singleCommentLineCount++
 				continue
 			}
 
-			verifyLineCount ++
+			verifyLineCount++
 		}
 
 	}
-	return verifyLineCount, emptyLineCount, singleCommentLineCount,multiCommentLineCount, nil
+	return verifyLineCount, emptyLineCount, singleCommentLineCount, multiCommentLineCount, nil
 }
-
 
 // 判断该文件夹是否在被排除的范围之内
 func IsIgnoreDir(config Config, dirpath string) bool {
 	for _, dir := range config.IgnoreFolderPath {
-		currentPath := config.CodeFolderPath + "/" + dir
-		if currentPath == dirpath {
+		ignorePath := filepath.Join(config.CodeFolderPath, dir)
+		if dirpath == ignorePath {
 			return true
 		}
 	}
