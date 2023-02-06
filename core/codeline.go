@@ -19,6 +19,10 @@ import (
 )
 
 func GetResultInfo(config Config) ResultInfo {
+	_, err := os.Open(config.CodeFolderPath)
+	if err != nil {
+		panic("配置的文件或目录不存在")
+	}
 	var resultInfo ResultInfo
 
 	// 总文件个数
